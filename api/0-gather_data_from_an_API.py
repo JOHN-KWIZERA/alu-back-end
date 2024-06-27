@@ -1,54 +1,35 @@
 #!/usr/bin/python3
+
 """
-    python script that returns TODO list progress for a given employee ID
+Returns to-do list information for a given employee ID.
+
+This script takes an employee ID as a command-line argument and fetches
+the corresponding user information and to-do list from the JSONPlaceholder API.
+It then prints the tasks completed by the employee.
 """
-import json
+
 import requests
-from sys import argv
+import sys
 
 
 if __name__ == "__main__":
-    """
-        request user info by employee ID
-    """
-    request_employee = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/'.format(argv[1]))
-    """
-        convert json to dictionary
-    """
-    employee = json.loads(request_employee.text)
-    """
-        extract employee name
-    """
-    employee_name = employee.get("name")
+    # Base URL for the JSONPlaceholder API
+    url = "https://jsonplaceholder.typicode.com/"
 
-    """
-        request user's TODO list
-    """
-    request_todos = requests.get(
-        'https://jsonplaceholder.typicode.com/users/{}/todos'.format(argv[1]))
-    """
-        dictionary to store task status in boolean format
-    """
-    tasks = {}
-    """
-        convert json to list of dictionaries
-    """
-    employee_todos = json.loads(request_todos.text)
-    """
-        loop through dictionary & get completed tasks
-    """
-    for dictionary in employee_todos:
-        tasks.update({dictionary.get("title"): dictionary.get("completed")})
+    # Get the employee information using the provided employee ID
+    employee_id = sys.argv[1]
+    user = requests.get(url + "users/{}".format(employee_id)).json()
 
-    """
-        return name, total number of tasks & completed tasks
-    """
-    EMPLOYEE_NAME = employee_name
-    TOTAL_NUMBER_OF_TASKS = len(tasks)
-    NUMBER_OF_DONE_TASKS = len([k for k, v in tasks.items() if v is True])
+    # Get the to-do list for the employee using the provided employee ID
+    params = {"userId": employee_id}
+    todos = requests.get(url + "todos", params).json()
+
+    # Filter completed tasks and count them
+    completed = [t.get("title") for t in todos if t.get("completed") is True]
+
+    # Print the employee's name and the number of completed tasks
     print("Employee {} is done with tasks({}/{}):".format(
-        EMPLOYEE_NAME, NUMBER_OF_DONE_TASKS, TOTAL_NUMBER_OF_TASKS))
-    for k, v in tasks.items():
-        if v is True:
-            print("\t {}".format(k))
+        user.get("name"), len(completed), len(todos)))
+
+    # Print the completed tasks one by one with indentation
+    [print("\t {}".format(complete)) for complete in completed]
