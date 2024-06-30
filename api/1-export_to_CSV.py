@@ -1,6 +1,7 @@
 #!/usr/bin/python3
 """
     python scripts that exports data in the CSV format
+    -- permissions.
 """
 import csv
 import json
